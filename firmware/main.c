@@ -157,6 +157,7 @@ void core1_entry(void){
     char buf[100];
     int i,j,k;
     uint16_t count=1;
+    uint8_t sw_count;
     char file_name[10];
     BYTE buffer[EPD_WIDTH*EPD_HEIGHT/8];
     BYTE *ImageData;
@@ -168,60 +169,94 @@ void core1_entry(void){
     gpio_put(LED1_PIN, 1);
     gpio_put(LED2_PIN, 1);
 
+
     f_mount(&fs, "", 0);
     sprintf(file_name, "0:%03d.BIN", count);
 
-    res = f_open(&fsr, file_name, FA_READ);
+    epd_read_update(file_name);
+
+    while(1){
+        // SWA PUSH
+        if(gpio_get(SWA_PIN)==1){
+            sleep_ms(100);
+            sw_count=0;
+            while(gpio_get(SWA_PIN)==1){
+                if(sw_count!=20){
+                    sw_count++;
+                }
+
+                if(sw_count==20){
+                    // long push
+                    gpio_put(PWR_ON_PIN, 0);        // power off
+                }
+            }
+            if(sw_count!=20){
+                // short push
+            }
+        }
+
+        // SWB PUSH
+        if(gpio_get(SWB_PIN)==1){
+            sleep_ms(100);
+            sw_count=0;
+            while(gpio_get(SWB_PIN)==1){
+                if(sw_count!=20){
+                    sw_count++;
+                }
+
+                if(sw_count==20){
+                    // long push
+                    gpio_put(PWR_ON_PIN, 0);        // power off
+                }
+            }
+            if(sw_count!=20){
+                // short push
+            }
+        }   
+
+        // SWC PUSH
+        if(gpio_get(SWC_PIN)==1){
+            sleep_ms(100);
+            sw_count=0;
+            while(gpio_get(SWC_PIN)==1){
+                if(sw_count!=20){
+                    sw_count++;
+                }
+
+                if(sw_count==20){
+                    // long push
+                    gpio_put(PWR_ON_PIN, 0);        // power off
+                }
+            }
+            if(sw_count!=20){
+                // short push
+            }
+        }
+    }
+}
+
+//------------------------------------------
+// read file and update E-paper
+//------------------------------------------
+FRESULT epd_read_update(char *file_name)
+{
+    BYTE buffer[EPD_WIDTH*EPD_HEIGHT/8];
+    BYTE ImageData[EPD_WIDTH*EPD_HEIGHT/8];
+    FIL fsr;
+    UINT res_num;
+    FRESULT res;
+
+    res = f_open(fsr, file_name, FA_READ);
     if(res==FR_OK){
-        f_read(&fsr, buffer, EPD_WIDTH*EPD_HEIGHT/8, &res_num);
+        f_read(fsr, buffer, EPD_WIDTH*EPD_HEIGHT/8, &res_num);
 
         memcpy(ImageData, buffer, EPD_WIDTH*EPD_HEIGHT/8);
 
         EPD_WhiteScreen_ALL(ImageData);
         EPD_DeepSleep();
-
     }
 
-    while(1){
-        if(gpio_get(SWA_PIN)==1){
-            sleep_ms(100);
-            count=0;
-            while(gpio_get(SWA_PIN)==1){
-                if(count==20){
-                    gpio_put(PWR_ON_PIN, 0);        // power off
-                }else{
-                    count++;
-                }
-            }
-        }
-
-        if(gpio_get(SWB_PIN)==1){
-            sleep_ms(100);
-            count=0;
-            while(gpio_get(SWA_PIN)==1){
-                if(count==20){
-                    // long push
-                    
-                }else{
-                    count++;
-                }
-            }            
-        }
-
-        if(gpio_get(SWC_PIN)==1){
-
-        }
-
-        sleep_ms(2000);
-        
-        uint8_t buf[8];
-        uint8_t b;
-
-        char cbuf[40];
-        sprintf(cbuf, "%d\r\n", b);
-//            sprintf(cbuf, "%X, %X, %X, %X, %X, %X, %X\n\r", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
-        uart_puts(UART_DEBUG, cbuf);
-    }
+    return res;
 }
 
 //------------------------------------------
