@@ -49,6 +49,7 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 void cdc_task(void);
 void core1_entry(void);
+FRESULT epd_read_update(char *file_name);
 
 int main(void)
 {
@@ -56,7 +57,7 @@ int main(void)
     UINT br,bw;
 
 
-    sleep_ms(500);
+    sleep_ms(100);
 
     // hardware init
     gpio_init(DEBUG_TX_PIN);
@@ -246,9 +247,9 @@ FRESULT epd_read_update(char *file_name)
     UINT res_num;
     FRESULT res;
 
-    res = f_open(fsr, file_name, FA_READ);
+    res = f_open(&fsr, file_name, FA_READ);
     if(res==FR_OK){
-        f_read(fsr, buffer, EPD_WIDTH*EPD_HEIGHT/8, &res_num);
+        f_read(&fsr, buffer, EPD_WIDTH*EPD_HEIGHT/8, &res_num);
 
         memcpy(ImageData, buffer, EPD_WIDTH*EPD_HEIGHT/8);
 
